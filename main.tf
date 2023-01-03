@@ -1,4 +1,5 @@
 locals {
+  gw_name            = "gw_vs_${var.adc-gw.fqdn}_ssl_443"
   gw_servicetype     = "SSL"
   gw_ip              = "0.0.0.0"
   gw_port            = 0
@@ -14,7 +15,7 @@ locals {
 # Add Citrix GW vServer
 #####
 resource "citrixadc_vpnvserver" "gw_vserver" {
-  name            = var.adc-gw-vserver.name
+  name            = local.gw_name
   servicetype     = local.gw_servicetype
   ipv46           = local.gw_ip
   port            = local.gw_port
