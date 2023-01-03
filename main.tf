@@ -1,43 +1,49 @@
+locals {
+    gw_servicetype     = "SSL"
+    gw_ip              = "0.0.0.0"
+    gw_port            = 0
+    gw_dtls            = "OFF"
+    gw_tcpprofilename  = "tcp_prof_${var.adc-base.environmentname}"
+    gw_httpprofilename = "http_prof_${var.adc-base.environmentname}"
+    gw_sslprofilename  = "ssl_prof_${var.adc-base.environmentname}_fe_TLS1213"
+    gw_appflowlog      = "DISABLED"
+    gw_staaddresstype  = "IPV4"
+  }
+}
+
 #####
 # Add Citrix GW vServer
 #####
-
 resource "citrixadc_vpnvserver" "gw_vserver" {
-  count           = length(var.adc-gw-vserver.name)
-  name            = element(var.adc-gw-vserver["name"],count.index)
-  servicetype     = element(var.adc-gw-vserver["servicetype"],count.index)
-  ipv46           = element(var.adc-gw-vserver["ipv46"],count.index)
-  port            = element(var.adc-gw-vserver["port"],count.index)
-  dtls            = element(var.adc-gw-vserver["dtls"],count.index)
-  tcpprofilename  = element(var.adc-gw-vserver["tcpprofilename"],count.index)
-  httpprofilename = element(var.adc-gw-vserver["httpprofilename"],count.index)
-  appflowlog      = element(var.adc-gw-vserver["appflowlog"],count.index)
+  name            = var.adc-gw-vserver.name
+  servicetype     = local.gw_servicetype
+  ipv46           = local.gw_ip
+  port            = local.gw_port
+  dtls            = local.gw_dtls
+  tcpprofilename  = local.gw_tcpprofilename
+  httpprofilename = local.gw_httpprofilename
+  appflowlog      = local.gw_appflowlog
 }
 
 #####
 # Bind SSL profile to GW vServer
 #####
-
 resource "citrixadc_sslvserver" "gw_vserver_sslprofile" {
-  count       = length(var.adc-gw-vserver.name)
-  vservername = citrixadc_vpnvserver.gw_vserver[count.index].name
-  sslprofile  = "ssl_prof_democloud_fe_TLS1213"
+  vservername = citrixadc_vpnvserver.gw_vserver.name
+  sslprofile  = local.gw_sslprofilename
 
   depends_on = [
     citrixadc_vpnvserver.gw_vserver
   ]
 }
 
-
 #####
 # Bind STA Servers to GW vServer
 #####
-
 resource "citrixadc_vpnvserver_staserver_binding" "gw_vserver_staserver_binding" {
-  count          = length(var.adc-gw-vserver-staserverbinding.name)
-  name           = element(var.adc-gw-vserver-staserverbinding["name"],count.index)
-  staserver      = element(var.adc-gw-vserver-staserverbinding["staserver"],count.index)
-  staaddresstype = element(var.adc-gw-vserver-staserverbinding["staaddresstype"],count.index)
+  name           = citrixadc_vpnvserver.gw_vserver.name
+  staserver      = var.adc-gw.staserver
+  staaddresstype = local.gw_staaddresstype
 
   depends_on = [
     citrixadc_vpnvserver.gw_vserver
@@ -47,22 +53,20 @@ resource "citrixadc_vpnvserver_staserver_binding" "gw_vserver_staserver_binding"
 #####
 # Add Session Action Receiver
 #####
-
 resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver" {
-  count                      = length(var.adc-gw-vpnsessionaction-receiver.name)
-  name                       = element(var.adc-gw-vpnsessionaction-receiver["name"],count.index)
-  clientlessmodeurlencoding  = element(var.adc-gw-vpnsessionaction-receiver["clientlessmodeurlencoding"],count.index)
-  clientlessvpnmode          = element(var.adc-gw-vpnsessionaction-receiver["clientlessvpnmode"],count.index)
-  defaultauthorizationaction = element(var.adc-gw-vpnsessionaction-receiver["defaultauthorizationaction"],count.index)
-  dnsvservername             = element(var.adc-gw-vpnsessionaction-receiver["dnsvservername"],count.index)
-  icaproxy                   = element(var.adc-gw-vpnsessionaction-receiver["icaproxy"],count.index)
-  sesstimeout                = element(var.adc-gw-vpnsessionaction-receiver["sesstimeout"],count.index)
-  sso                        = element(var.adc-gw-vpnsessionaction-receiver["sso"],count.index)
-  ssocredential              = element(var.adc-gw-vpnsessionaction-receiver["ssocredential"],count.index)
-  storefronturl              = element(var.adc-gw-vpnsessionaction-receiver["storefronturl"],count.index)
-  transparentinterception    = element(var.adc-gw-vpnsessionaction-receiver["transparentinterception"],count.index)
-  wihome                     = element(var.adc-gw-vpnsessionaction-receiver["wihome"],count.index)
-  windowsautologon           = element(var.adc-gw-vpnsessionaction-receiver["windowsautologon"],count.index)
+  name = "sess_prof_sf_receiver"
+  clientlessmodeurlencoding = "TRANSPARENT"
+  clientlessvpnmode = "ON"
+  defaultauthorizationaction = "ALLOW"
+  dnsvservername = "lb_vs_dc.dt.${var.adc-base.environmentname}_dns_53"
+  icaproxy = "OFF"
+  sesstimeout = "2880"
+  sso = "ON"
+  ssocredential = "PRIMARY"
+  storefronturl = "http://citrix-ctrl-01.dt.${var.adc-base.environmentname}/"
+  transparentinterception = "OFF"
+  wihome = "http://citrix-ctrl-01.dt.${var.adc-base.environmentname}/"
+  windowsautologon = "ON"
 
   depends_on = [
     citrixadc_vpnvserver.gw_vserver
@@ -72,24 +76,22 @@ resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver" {
 #####
 # Add Session Action Receiver Web
 #####
-
-resource "citrixadc_vpnsessionaction" "gw_sess_act_receiverweb" {
-  count                      = length(var.adc-gw-vpnsessionaction-receiverweb.name)
-  name                       = element(var.adc-gw-vpnsessionaction-receiverweb["name"],count.index)
-  clientchoices              = element(var.adc-gw-vpnsessionaction-receiverweb["clientchoices"],count.index)
-  clientlessmodeurlencoding  = element(var.adc-gw-vpnsessionaction-receiverweb["clientlessmodeurlencoding"],count.index)
-  clientlessvpnmode          = element(var.adc-gw-vpnsessionaction-receiverweb["clientlessvpnmode"],count.index)
-  defaultauthorizationaction = element(var.adc-gw-vpnsessionaction-receiverweb["defaultauthorizationaction"],count.index)
-  dnsvservername             = element(var.adc-gw-vpnsessionaction-receiverweb["dnsvservername"],count.index)
-  icaproxy                   = element(var.adc-gw-vpnsessionaction-receiverweb["icaproxy"],count.index)
-  locallanaccess             = element(var.adc-gw-vpnsessionaction-receiverweb["locallanaccess"],count.index)
-  rfc1918                    = element(var.adc-gw-vpnsessionaction-receiverweb["rfc1918"],count.index)
-  sesstimeout                = element(var.adc-gw-vpnsessionaction-receiverweb["sesstimeout"],count.index)
-  sso                        = element(var.adc-gw-vpnsessionaction-receiverweb["sso"],count.index)
-  ssocredential              = element(var.adc-gw-vpnsessionaction-receiverweb["ssocredential"],count.index)
-  wihome                     = element(var.adc-gw-vpnsessionaction-receiverweb["wihome"],count.index)
-  windowsautologon           = element(var.adc-gw-vpnsessionaction-receiverweb["windowsautologon"],count.index)
-  wiportalmode               = element(var.adc-gw-vpnsessionaction-receiverweb["wiportalmode"],count.index)
+resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver_web" {
+  name = "sess_prof_sf_receiver_web"
+  clientchoices = "OFF"
+  clientlessmodeurlencoding = "TRANSPARENT"
+  clientlessvpnmode = "OFF"
+  defaultauthorizationaction = "ALLOW"
+  dnsvservername = "lb_vs_dc.dt.${var.adc-base.environmentname}_dns_53"
+  icaproxy = "ON"
+  locallanaccess = "ON"
+  rfc1918 = "OFF"
+  sesstimeout = "2880"
+  sso = "ON"
+  ssocredential = "PRIMARY"
+  wihome = "http://citrix-ctrl-01.dt.${var.adc-base.environmentname}/Citrix/StoreWeb/"
+  windowsautologon = "ON"
+  wiportalmode = "NORMAL"
 
   depends_on = [
     citrixadc_vpnvserver.gw_vserver
@@ -99,58 +101,77 @@ resource "citrixadc_vpnsessionaction" "gw_sess_act_receiverweb" {
 #####
 # Add Session Policies
 #####
-
 resource "citrixadc_vpnsessionpolicy" "gw_sess_pol_receiver" {
-  count  = length(var.adc-gw-vpnsessionpolicy.name)
-  name   = element(var.adc-gw-vpnsessionpolicy["name"],count.index)
-  rule   = element(var.adc-gw-vpnsessionpolicy["rule"],count.index)
-  action = element(var.adc-gw-vpnsessionpolicy["action"],count.index)
+  name = "sess_pol_sf_receiver"
+  rule = "HTTP.REQ.HEADER(\"User-Agent\").CONTAINS(\"CitrixReceiver\") && HTTP.REQ.HEADER(\"X-Citrix-Gateway\").EXISTS"
+  action = "sess_prof_sf_receiver"
 
   depends_on = [
-    citrixadc_vpnsessionaction.gw_sess_act_receiver,
-    citrixadc_vpnsessionaction.gw_sess_act_receiverweb
+    citrixadc_vpnsessionaction.gw_sess_act_receiver
+  ]
+}
+
+resource "citrixadc_vpnsessionpolicy" "gw_sess_pol_receiver_web" {
+  name = "sess_pol_sf_receiver_web"
+  rule = "HTTP.REQ.HEADER(\"User-Agent\").CONTAINS(\"CitrixReceiver\").NOT" 
+  action = "sess_prof_sf_receiver_web"
+
+  depends_on = [
+    citrixadc_vpnsessionaction.gw_sess_act_receiver_web
   ]
 }
 
 #####s
 # Bind session policies to GW vServer
 #####
-
-resource "citrixadc_vpnvserver_vpnsessionpolicy_binding" "gw_vserver_vpnsessionpolicy_binding" {
-  count     = length(var.adc-gw-vserver-vpnsessionpolicybinding.name)
-  name      = element(var.adc-gw-vserver-vpnsessionpolicybinding["name"],count.index)
-  policy    = element(var.adc-gw-vserver-vpnsessionpolicybinding["policy"],count.index)
-  priority  = element(var.adc-gw-vserver-vpnsessionpolicybinding["priority"],count.index)
+resource "citrixadc_vpnvserver_vpnsessionpolicy_binding" "gw_vserver_vpnsessionpolicy_binding_receiver" {
+  name      = citrixadc_vpnvserver.gw_vserver.name
+  policy    = citrixadc_vpnsessionpolicy.gw_sess_pol_receiver
+  priority  = 100
 
   depends_on = [
     citrixadc_vpnsessionpolicy.gw_sess_pol_receiver
   ]
 }
 
+resource "citrixadc_vpnvserver_vpnsessionpolicy_binding" "gw_vserver_vpnsessionpolicy_binding_receiver_web" {
+  name      = citrixadc_vpnvserver.gw_vserver.name
+  policy    = citrixadc_vpnsessionpolicy.gw_sess_pol_receiver_web
+  priority  = 110
+
+  depends_on = [
+    citrixadc_vpnsessionpolicy.gw_sess_pol_receiver_web
+  ]
+}
+
 resource "citrixadc_authenticationldapaction" "gw_authenticationldapaction" {
-  count              = length(var.adc-gw-vserver-authenticationldapaction.name)
-  name               = element(var.adc-gw-vserver-authenticationldapaction["name"],count.index)
-  servername         = element(var.adc-gw-vserver-authenticationldapaction["servername"],count.index)
-  ldapbase           = element(var.adc-gw-vserver-authenticationldapaction["ldapBase"],count.index)
-  ldapbinddn         = element(var.adc-gw-vserver-authenticationldapaction["ldapBindDn"],count.index)
-  ldapbinddnpassword = element(var.adc-gw-vserver-authenticationldapaction["ldapBindDnPassword"],count.index)
-  ldaploginname      = element(var.adc-gw-vserver-authenticationldapaction["ldapLoginName"],count.index)
-  groupattrname      = element(var.adc-gw-vserver-authenticationldapaction["groupAttrName"],count.index)
-  subattributename   = element(var.adc-gw-vserver-authenticationldapaction["subAttributeName"],count.index)
-  ssonameattribute   = element(var.adc-gw-vserver-authenticationldapaction["ssoNameAttribute"],count.index)
-  sectype            = element(var.adc-gw-vserver-authenticationldapaction["secType"],count.index)
-  passwdchange       = element(var.adc-gw-vserver-authenticationldapaction["passwdChange"],count.index)
+  count              = length(var.adc-gw-authenticationldapaction.name)
+  name               = element(var.adc-gw-authenticationldapaction["name"],count.index)
+  servername         = element(var.adc-gw-authenticationldapaction["servername"],count.index)
+  ldapbase           = element(var.adc-gw-authenticationldapaction["ldapBase"],count.index)
+  ldapbinddn         = element(var.adc-gw-authenticationldapaction["ldapBindDn"],count.index)
+  ldapbinddnpassword = element(var.adc-gw-authenticationldapaction["ldapBindDnPassword"],count.index)
+  ldaploginname      = element(var.adc-gw-authenticationldapaction["ldapLoginName"],count.index)
+  groupattrname      = element(var.adc-gw-authenticationldapaction["groupAttrName"],count.index)
+  subattributename   = element(var.adc-gw-authenticationldapaction["subAttributeName"],count.index)
+  ssonameattribute   = element(var.adc-gw-authenticationldapaction["ssoNameAttribute"],count.index)
+  sectype            = element(var.adc-gw-authenticationldapaction["secType"],count.index)
+  passwdchange       = element(var.adc-gw-authenticationldapaction["passwdChange"],count.index)
 
     depends_on = [
       citrixadc_vpnvserver.gw_vserver
     ]
 }
 
+#####
+# Bind authentication profile to policy
+#####
+
 resource "citrixadc_authenticationldappolicy" "gw_authenticationldappolicy" {
-    count     = length(var.adc-gw-vserver-authenticationldappolicy.name)
-    name      = element(var.adc-gw-vserver-authenticationldappolicy["name"],count.index)
-    rule      = element(var.adc-gw-vserver-authenticationldappolicy["rule"],count.index)
-    reqaction = element(var.adc-gw-vserver-authenticationldappolicy["reqaction"],count.index)
+    count     = length(var.adc-gw-authenticationldappolicy.name)
+    name      = element(var.adc-gw-authenticationldappolicy["name"],count.index)
+    rule      = element(var.adc-gw-authenticationldappolicy["rule"],count.index)
+    reqaction = element(var.adc-gw-authenticationldappolicy["reqaction"],count.index)
 
     depends_on = [
         citrixadc_authenticationldapaction.gw_authenticationldapaction
@@ -162,11 +183,10 @@ resource "citrixadc_authenticationldappolicy" "gw_authenticationldappolicy" {
 #####
 
 resource "citrixadc_vpnvserver_authenticationldappolicy_binding" "gw_vserver_authenticationldappolicy_binding" {
-    count       = length(var.adc-gw-vserver-authenticationldappolicy_binding.name)
-    name        = element(var.adc-gw-vserver-authenticationldappolicy_binding["name"],count.index)
-    policy      = element(var.adc-gw-vserver-authenticationldappolicy_binding["policy"],count.index)
-    priority    = element(var.adc-gw-vserver-authenticationldappolicy_binding["priority"],count.index)
-    bindpoint   = element(var.adc-gw-vserver-authenticationldappolicy_binding["bindpoint"],count.index)
+    name        = citrixadc_vpnvserver.gw_vserver.name
+    policy      = var.adc-gw.authenticationpolicy
+    priority    = 100
+    bindpoint   = "REQUEST"
     
     depends_on = [
         citrixadc_authenticationldappolicy.gw_authenticationldappolicy
@@ -178,9 +198,8 @@ resource "citrixadc_vpnvserver_authenticationldappolicy_binding" "gw_vserver_aut
 #####
 
 resource "citrixadc_sslvserver_sslcertkey_binding" "gw_sslvserver_sslcertkey_binding" {
-    count       = length(var.adc-gw-vserver.name)
-    vservername = element(var.adc-gw-vserver["name"],count.index)
-    certkeyname = "ssl_cert_democloud"
+    vservername = citrixadc_vpnvserver.gw_vserver.name
+    certkeyname = "ssl_cert_${var.adc-base.environmentname}"
     snicert     = false
 
     depends_on = [
