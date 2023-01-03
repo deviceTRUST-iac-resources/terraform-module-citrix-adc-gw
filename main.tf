@@ -184,7 +184,7 @@ resource "citrixadc_authenticationldappolicy" "gw_authenticationldappolicy" {
 
 resource "citrixadc_vpnvserver_authenticationldappolicy_binding" "gw_vserver_authenticationldappolicy_binding" {
     name        = citrixadc_vpnvserver.gw_vserver.name
-    policy      = var.adc-gw.authenticationpolicy.name
+    policy      = var.adc-gw.authenticationpolicy
     priority    = 100
     bindpoint   = "REQUEST"
     
