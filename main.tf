@@ -126,7 +126,7 @@ resource "citrixadc_vpnsessionpolicy" "gw_sess_pol_receiver_web" {
 #####
 resource "citrixadc_vpnvserver_vpnsessionpolicy_binding" "gw_vserver_vpnsessionpolicy_binding_receiver" {
   name      = citrixadc_vpnvserver.gw_vserver.name
-  policy    = citrixadc_vpnsessionpolicy.gw_sess_pol_receiver
+  policy    = citrixadc_vpnsessionpolicy.gw_sess_pol_receiver.name
   priority  = 100
 
   depends_on = [
@@ -136,7 +136,7 @@ resource "citrixadc_vpnvserver_vpnsessionpolicy_binding" "gw_vserver_vpnsessionp
 
 resource "citrixadc_vpnvserver_vpnsessionpolicy_binding" "gw_vserver_vpnsessionpolicy_binding_receiver_web" {
   name      = citrixadc_vpnvserver.gw_vserver.name
-  policy    = citrixadc_vpnsessionpolicy.gw_sess_pol_receiver_web
+  policy    = citrixadc_vpnsessionpolicy.gw_sess_pol_receiver_web.name
   priority  = 110
 
   depends_on = [
@@ -184,7 +184,7 @@ resource "citrixadc_authenticationldappolicy" "gw_authenticationldappolicy" {
 
 resource "citrixadc_vpnvserver_authenticationldappolicy_binding" "gw_vserver_authenticationldappolicy_binding" {
     name        = citrixadc_vpnvserver.gw_vserver.name
-    policy      = var.adc-gw.authenticationpolicy
+    policy      = var.adc-gw.authenticationpolicy.name
     priority    = 100
     bindpoint   = "REQUEST"
     
