@@ -1,14 +1,13 @@
 locals {
-    gw_servicetype     = "SSL"
-    gw_ip              = "0.0.0.0"
-    gw_port            = 0
-    gw_dtls            = "OFF"
-    gw_tcpprofilename  = "tcp_prof_${var.adc-base.environmentname}"
-    gw_httpprofilename = "http_prof_${var.adc-base.environmentname}"
-    gw_sslprofilename  = "ssl_prof_${var.adc-base.environmentname}_fe_TLS1213"
-    gw_appflowlog      = "DISABLED"
-    gw_staaddresstype  = "IPV4"
-  }
+  gw_servicetype     = "SSL"
+  gw_ip              = "0.0.0.0"
+  gw_port            = 0
+  gw_dtls            = "OFF"
+  gw_tcpprofilename  = "tcp_prof_${var.adc-base.environmentname}"
+  gw_httpprofilename = "http_prof_${var.adc-base.environmentname}"
+  gw_sslprofilename  = "ssl_prof_${var.adc-base.environmentname}_fe_TLS1213"
+  gw_appflowlog      = "DISABLED"
+  gw_staaddresstype  = "IPV4"
 }
 
 #####
