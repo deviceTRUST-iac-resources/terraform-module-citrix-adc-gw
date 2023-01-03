@@ -58,14 +58,14 @@ resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver" {
   clientlessmodeurlencoding = "TRANSPARENT"
   clientlessvpnmode = "ON"
   defaultauthorizationaction = "ALLOW"
-  dnsvservername = "lb_vs_dc.dt.${var.adc-base.environmentname}_dns_53"
+  dnsvservername = var.adc-gw.dnsvservername
   icaproxy = "OFF"
   sesstimeout = "2880"
   sso = "ON"
   ssocredential = "PRIMARY"
-  storefronturl = "http://citrix-ctrl-01.dt.${var.adc-base.environmentname}/"
+  storefronturl = var.adc-gw.wihome
   transparentinterception = "OFF"
-  wihome = "http://citrix-ctrl-01.dt.${var.adc-base.environmentname}/"
+  wihome = var.adc-gw.wihome
   windowsautologon = "ON"
 
   depends_on = [
@@ -82,14 +82,14 @@ resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver_web" {
   clientlessmodeurlencoding = "TRANSPARENT"
   clientlessvpnmode = "OFF"
   defaultauthorizationaction = "ALLOW"
-  dnsvservername = "lb_vs_dc.dt.${var.adc-base.environmentname}_dns_53"
+  dnsvservername = var.adc-gw.dnsvservername
   icaproxy = "ON"
   locallanaccess = "ON"
   rfc1918 = "OFF"
   sesstimeout = "2880"
   sso = "ON"
   ssocredential = "PRIMARY"
-  wihome = "http://citrix-ctrl-01.dt.${var.adc-base.environmentname}/Citrix/StoreWeb/"
+  wihome = "${var.adc-gw.wihome}/Citrix/StoreWeb/"
   windowsautologon = "ON"
   wiportalmode = "NORMAL"
 
