@@ -197,15 +197,15 @@ resource "citrixadc_vpnvserver_authenticationldappolicy_binding" "gw_vserver_aut
 # Bind SSL certificate to SSL GW vServers
 #####
 
-resource "citrixadc_sslvserver_sslcertkey_binding" "gw_sslvserver_sslcertkey_binding" {
-    vservername = citrixadc_vpnvserver.gw_vserver.name
-    certkeyname = "ssl_cert_${var.adc-base.environmentname}"
-    snicert     = false
+#resource "citrixadc_sslvserver_sslcertkey_binding" "gw_sslvserver_sslcertkey_binding" {
+#    vservername = citrixadc_vpnvserver.gw_vserver.name
+#    certkeyname = "ssl_cert_${var.adc-base.environmentname}"
+#    snicert     = false
 
-    depends_on = [
-        citrixadc_vpnvserver_authenticationldappolicy_binding.gw_vserver_authenticationldappolicy_binding
-    ]
-}
+#    depends_on = [
+#        citrixadc_vpnvserver_authenticationldappolicy_binding.gw_vserver_authenticationldappolicy_binding
+#    ]
+#}
 
 #####
 # Save config
