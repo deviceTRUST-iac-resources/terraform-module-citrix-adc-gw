@@ -217,7 +217,7 @@ resource "citrixadc_nsconfig_save" "gw_save" {
     timestamp  = timestamp()
 
     depends_on = [
-        citrixadc_sslvserver_sslcertkey_binding.gw_sslvserver_sslcertkey_binding
+        citrixadc_vpnvserver_authenticationldappolicy_binding.gw_vserver_authenticationldappolicy_binding
     ]
 
 }
