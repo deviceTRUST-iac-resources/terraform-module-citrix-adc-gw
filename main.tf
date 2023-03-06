@@ -89,7 +89,7 @@ resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver_web" {
   sesstimeout = "2880"
   sso = "ON"
   ssocredential = "PRIMARY"
-  wihome = "${var.adc-gw.wihome}/Citrix/StoreWeb/"
+  wihome = "${var.adc-gw.wihome}"
   windowsautologon = "ON"
   wiportalmode = "NORMAL"
 
