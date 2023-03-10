@@ -12,6 +12,14 @@ locals {
 }
 
 #####
+# Enable Citrix Gateway GFeature
+#####
+
+resource "citrixadc_nsfeature" "base_nsfeature" {
+  sslvpn = true
+}
+
+#####
 # Add Citrix GW vServer
 #####
 resource "citrixadc_vpnvserver" "gw_vserver" {
