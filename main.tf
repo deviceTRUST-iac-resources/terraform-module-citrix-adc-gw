@@ -207,7 +207,7 @@ resource "citrixadc_vpnvserver_authenticationldappolicy_binding" "gw_vserver_aut
 
 resource "citrixadc_sslvserver_sslcertkey_binding" "gw_sslvserver_sslcertkey_binding" {
   vservername = citrixadc_vpnvserver.gw_vserver.name
-  certkeyname = "ssl_cert_${var.adc-base.environmentname}"
+  certkeyname = "ssl_cert_${var.adc-base.environmentname}_Server"
   snicert     = false
 
   depends_on = [
