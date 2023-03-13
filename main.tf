@@ -1,21 +1,7 @@
-locals {
-  gw_name            = "gw_vs_${var.adc-gw.fqdn}_ssl_443"
-  gw_servicetype     = "SSL"
-  gw_ip              = "0.0.0.0"
-  gw_port            = 0
-  gw_dtls            = "OFF"
-  gw_tcpprofilename  = "tcp_prof_${var.adc-base.environmentname}"
-  gw_httpprofilename = "http_prof_${var.adc-base.environmentname}"
-  gw_sslprofilename  = "ssl_prof_${var.adc-base.environmentname}_fe_TLS1213"
-  gw_appflowlog      = "DISABLED"
-  gw_staaddresstype  = "IPV4"
-}
-
 #####
-# Enable Citrix Gateway GFeature
+# Enable Citrix Gateway Feature
 #####
-
-resource "citrixadc_nsfeature" "base_nsfeature" {
+resource "citrixadc_nsfeature" "gw_nsfeature" {
   sslvpn = true
 }
 
@@ -23,14 +9,14 @@ resource "citrixadc_nsfeature" "base_nsfeature" {
 # Add Citrix GW vServer
 #####
 resource "citrixadc_vpnvserver" "gw_vserver" {
-  name            = local.gw_name
-  servicetype     = local.gw_servicetype
-  ipv46           = local.gw_ip
-  port            = local.gw_port
-  dtls            = local.gw_dtls
-  tcpprofilename  = local.gw_tcpprofilename
-  httpprofilename = local.gw_httpprofilename
-  appflowlog      = local.gw_appflowlog
+  name            = var.adc-gw.name
+  servicetype     = var.adc-gw.servicetype
+  ipv46           = var.adc-gw.ip
+  port            = var.adc-gw.port
+  dtls            = var.adc-gw.dtls
+  tcpprofilename  = "tcp_prof_${var.adc-base.environmentname}"
+  httpprofilename = "http_prof_${var.adc-base.environmentname}"
+  appflowlog      = var.adc-gw.appflowlog
 }
 
 #####
@@ -38,7 +24,7 @@ resource "citrixadc_vpnvserver" "gw_vserver" {
 #####
 resource "citrixadc_sslvserver" "gw_vserver_sslprofile" {
   vservername = citrixadc_vpnvserver.gw_vserver.name
-  sslprofile  = local.gw_sslprofilename
+  sslprofile  = "ssl_prof_${var.adc-base.environmentname}_fe_TLS1213"
 
   depends_on = [
     citrixadc_vpnvserver.gw_vserver
@@ -51,7 +37,7 @@ resource "citrixadc_sslvserver" "gw_vserver_sslprofile" {
 resource "citrixadc_vpnvserver_staserver_binding" "gw_vserver_staserver_binding" {
   name           = citrixadc_vpnvserver.gw_vserver.name
   staserver      = var.adc-gw.staserver
-  staaddresstype = local.gw_staaddresstype
+  staaddresstype = var.adc-gw.staaddresstype
 
   depends_on = [
     citrixadc_vpnvserver.gw_vserver
@@ -71,9 +57,9 @@ resource "citrixadc_vpnsessionaction" "gw_sess_act_receiver" {
   sesstimeout = "2880"
   sso = "ON"
   ssocredential = "PRIMARY"
-  storefronturl = var.adc-gw.wihome
+  storefronturl = "${var.adc-gw.wihome}"
   transparentinterception = "OFF"
-  wihome = var.adc-gw.wihome
+  wihome = "${var.adc-gw.wihome}"
   windowsautologon = "ON"
 
   depends_on = [
